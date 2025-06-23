@@ -1,0 +1,69 @@
+[package]
+name = "zkvm-from-scratch"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "A zero-knowledge virtual machine implementation from scratch"
+repository = "https://github.com/your-username/zkvm-from-scratch"
+license = "MIT OR Apache-2.0"
+keywords = ["zkvm", "zero-knowledge", "virtual-machine", "cryptography"]
+categories = ["cryptography", "development-tools"]
+
+[lib]
+name = "zkvm_from_scratch"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "zkvm"
+path = "src/bin/main.rs"
+
+[dependencies]
+# Core dependencies will be added as development progresses
+# Example dependencies for a ZKVM project:
+# ark-ff = "0.4"
+# ark-ec = "0.4" 
+# ark-std = "0.4"
+# ark-serialize = "0.4"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"
+wee_alloc = "0.4"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[features]
+default = []
+# Feature flags for different proof systems
+stark = []
+snark = []
+bulletproofs = []
+# Development features
+std = []
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+
+# Optimize for size when building for WebAssembly
+[profile.wasm-release]
+inherits = "release"
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[[bench]]
+name = "zkvm_benchmarks"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
