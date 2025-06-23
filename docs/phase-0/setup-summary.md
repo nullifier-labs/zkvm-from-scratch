@@ -57,7 +57,7 @@ This document summarizes the complete development environment setup for the zkvm
 
 ### Rust Toolchain
 - ✅ Nightly Rust toolchain
-- ✅ WebAssembly targets (`wasm32-unknown-unknown`, `wasm32-wasi`)
+- ✅ WebAssembly targets (`wasm32-unknown-unknown`, `wasm32-wasip1`)
 - ✅ Essential components (rustfmt, clippy, rust-src, llvm-tools-preview)
 
 ### WebAssembly Support

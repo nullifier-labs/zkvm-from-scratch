@@ -1,0 +1,89 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo
+Cargo.lock
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# WebAssembly artifacts
+/pkg/
+/wasm-pack.log
+
+# Documentation build
+/target/doc/
+
+# Benchmark results
+/target/criterion/
+
+# Coverage reports
+/target/tarpaulin-report.html
+/target/coverage/
+
+# Flamegraph output
+flamegraph.svg
+perf.data*
+
+# Local development files
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+
+# Log files
+*.log
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Node.js (for potential web integration)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test artifacts
+/target/nextest/
+junit.xml
+
+# Profile-guided optimization
+*.profdata
+
+# Backup files
+*.bak
+*.backup
