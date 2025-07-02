@@ -18,8 +18,9 @@ name = "zkvm"
 path = "src/bin/main.rs"
 
 [dependencies]
-# Core dependencies will be added as development progresses
-# Example dependencies for a ZKVM project:
+serde = { version = "1.0", features = ["derive"] }
+bincode = "1.3"
+# Future cryptographic dependencies:
 # ark-ff = "0.4"
 # ark-ec = "0.4" 
 # ark-std = "0.4"

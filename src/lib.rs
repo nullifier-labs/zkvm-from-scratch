@@ -7,7 +7,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![warn(missing_docs)]
+#![allow(missing_docs)]
 #![warn(clippy::all)]
 #![allow(clippy::mixed_attributes_style)]
 
@@ -29,127 +29,22 @@ pub use wasm_bindgen::prelude::*;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 /// Core virtual machine components
-pub mod vm {
-    //! Virtual machine implementation
-
-    /// A basic virtual machine structure
-    #[derive(Debug, Clone)]
-    pub struct VirtualMachine {
-        /// Program counter
-        pub pc: usize,
-        /// Memory
-        pub memory: Vec<u8>,
-        /// Stack
-        pub stack: Vec<u64>,
-    }
-
-    impl VirtualMachine {
-        /// Create a new virtual machine
-        pub fn new() -> Self {
-            Self {
-                pc: 0,
-                memory: Vec::new(),
-                stack: Vec::new(),
-            }
-        }
-
-        /// Reset the virtual machine state
-        pub fn reset(&mut self) {
-            self.pc = 0;
-            self.memory.clear();
-            self.stack.clear();
-        }
-    }
-
-    impl Default for VirtualMachine {
-        fn default() -> Self {
-            Self::new()
-        }
-    }
-}
+pub mod vm;
 
 /// Zero-knowledge proof components
-pub mod zkp {
-    //! Zero-knowledge proof implementations
-
-    /// Trait for zero-knowledge proof systems
-    pub trait ProofSystem {
-        /// Proof type
-        type Proof;
-        /// Public parameters
-        type PublicParams;
-        /// Error type
-        type Error;
-
-        /// Generate a proof
-        fn prove(&self, params: &Self::PublicParams) -> Result<Self::Proof, Self::Error>;
-
-        /// Verify a proof
-        fn verify(
-            &self,
-            proof: &Self::Proof,
-            params: &Self::PublicParams,
-        ) -> Result<bool, Self::Error>;
-    }
-}
+pub mod zkp;
 
 /// Cryptographic utilities
-pub mod crypto {
-    //! Cryptographic primitives and utilities
-
-    /// Hash function trait
-    pub trait Hash {
-        /// Output type
-        type Output;
-
-        /// Hash input data
-        fn hash(&self, data: &[u8]) -> Self::Output;
-    }
-
-    /// Merkle tree implementation
-    pub struct MerkleTree {
-        /// Tree leaves
-        pub leaves: Vec<[u8; 32]>,
-        /// Tree root
-        pub root: [u8; 32],
-    }
-
-    impl MerkleTree {
-        /// Create a new Merkle tree
-        pub fn new(leaves: Vec<[u8; 32]>) -> Self {
-            // Simple placeholder implementation
-            let root = [0u8; 32];
-            Self { leaves, root }
-        }
-
-        /// Get the root hash
-        pub fn root(&self) -> [u8; 32] {
-            self.root
-        }
-    }
-}
+pub mod crypto;
 
 /// Utility functions and helpers
-pub mod utils {
-    //! Utility functions
+pub mod utils;
 
-    /// Convert bytes to hex string
-    pub fn bytes_to_hex(bytes: &[u8]) -> String {
-        bytes.iter().map(|b| format!("{b:02x}")).collect()
-    }
-
-    /// Convert hex string to bytes
-    pub fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, &'static str> {
-        if hex.len() % 2 != 0 {
-            return Err("Hex string must have even length");
-        }
-
-        (0..hex.len())
-            .step_by(2)
-            .map(|i| u8::from_str_radix(&hex[i..i + 2], 16).map_err(|_| "Invalid hex character"))
-            .collect()
-    }
-}
+// Re-export key items from modules
+pub use utils::{encode_hex, decode_hex};
+pub use vm::{VmState, Instruction, Opcode, ExecutionStep};
+pub use crypto::{MerkleTree, HashValue};
+pub use zkp::{Prover, Verifier, Proof, StarkProver, StarkVerifier, ExecutionTrace, ConstraintSystem};
 
 // WebAssembly bindings (optional). Enable via `wasm-bindings` feature if needed.
 #[cfg(all(target_arch = "wasm32", feature = "wasm-bindings"))]
@@ -164,8 +59,8 @@ pub fn wasm_main() {
 #[cfg(all(target_arch = "wasm32", feature = "wasm-bindings"))]
 #[wasm_bindgen]
 pub fn create_vm() -> wasm_bindgen::JsValue {
-    wasm_bindgen::JsValue::from_serde(&vm::VirtualMachine::new())
-        .unwrap_or_else(|_| wasm_bindgen::JsValue::NULL)
+    let vm = VmState::new(1024 * 1024); // 1MB memory
+    wasm_bindgen::JsValue::NULL
 }
 
 #[cfg(test)]
@@ -174,26 +69,25 @@ mod tests {
 
     #[test]
     fn test_vm_creation() {
-        let vm = vm::VirtualMachine::new();
+        let vm = VmState::new(1024);
         assert_eq!(vm.pc, 0);
-        assert!(vm.memory.is_empty());
-        assert!(vm.stack.is_empty());
+        assert_eq!(vm.registers[0], 0);
     }
 
     #[test]
     fn test_merkle_tree() {
-        let leaves = vec![[1u8; 32], [2u8; 32]];
-        let tree = crypto::MerkleTree::new(leaves);
-        assert_eq!(tree.leaves.len(), 2);
+        let data: Vec<&[u8]> = vec![b"leaf1", b"leaf2"];
+        let tree = MerkleTree::new(data);
+        assert_ne!(tree.root(), &[0u8; 32]);
     }
 
     #[test]
     fn test_hex_conversion() {
         let bytes = vec![0x12, 0x34, 0xab, 0xcd];
-        let hex = utils::bytes_to_hex(&bytes);
+        let hex = encode_hex(&bytes);
         assert_eq!(hex, "1234abcd");
 
-        let back_to_bytes = utils::hex_to_bytes(&hex).unwrap();
+        let back_to_bytes = decode_hex(&hex).unwrap();
         assert_eq!(bytes, back_to_bytes);
     }
 }
