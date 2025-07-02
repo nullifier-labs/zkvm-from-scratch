@@ -15,7 +15,7 @@ impl HashFunction for SimpleHash {
         let mut hasher = DefaultHasher::new();
         data.hash(&mut hasher);
         let hash_u64 = hasher.finish();
-        
+
         let mut result = [0u8; 32];
         result[0..8].copy_from_slice(&hash_u64.to_le_bytes());
         result

@@ -10,7 +10,6 @@ keywords = ["zkvm", "zero-knowledge", "virtual-machine", "cryptography"]
 categories = ["cryptography", "development-tools"]
 
 [lib]
-name = "zkvm_from_scratch"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]

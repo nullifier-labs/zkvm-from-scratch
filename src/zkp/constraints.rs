@@ -34,6 +34,12 @@ pub enum Expression {
     Sub(Box<Expression>, Box<Expression>),
 }
 
+impl Default for ConstraintSystem {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ConstraintSystem {
     pub fn new() -> Self {
         Self {
@@ -60,10 +66,10 @@ impl ConstraintSystem {
         self.add_witness_column("step".to_string());
         self.add_witness_column("pc_before".to_string());
         self.add_witness_column("pc_after".to_string());
-        
+
         for i in 0..32 {
-            self.add_witness_column(format!("reg_{}_before", i));
-            self.add_witness_column(format!("reg_{}_after", i));
+            self.add_witness_column(format!("reg_{i}_before"));
+            self.add_witness_column(format!("reg_{i}_after"));
         }
 
         // Add public columns for initial and final state
@@ -77,8 +83,8 @@ impl ConstraintSystem {
 
     fn generate_constraints_for_step(&mut self, step: &TraceStep, step_idx: usize) {
         let _step_var = Expression::Variable(format!("step_{step_idx}"));
-        let pc_before = Expression::Variable(format!("pc_before_{}", step_idx));
-        let pc_after = Expression::Variable(format!("pc_after_{}", step_idx));
+        let pc_before = Expression::Variable(format!("pc_before_{step_idx}"));
+        let pc_after = Expression::Variable(format!("pc_after_{step_idx}"));
 
         // PC progression constraint for most instructions
         match step.instruction.opcode {
@@ -100,10 +106,17 @@ impl ConstraintSystem {
         // Instruction-specific constraints
         match step.instruction.opcode {
             Opcode::Add => {
-                let rs1_val = Expression::Variable(format!("reg_{}_before_{}", step.instruction.rs1, step_idx));
-                let rs2_val = Expression::Variable(format!("reg_{}_before_{}", step.instruction.rs2, step_idx));
-                let rd_val = Expression::Variable(format!("reg_{}_after_{}", step.instruction.rd, step_idx));
-                
+                let rs1_val = Expression::Variable(format!(
+                    "reg_{}_before_{}",
+                    step.instruction.rs1, step_idx
+                ));
+                let rs2_val = Expression::Variable(format!(
+                    "reg_{}_before_{}",
+                    step.instruction.rs2, step_idx
+                ));
+                let rd_val =
+                    Expression::Variable(format!("reg_{}_after_{}", step.instruction.rd, step_idx));
+
                 // rd = rs1 + rs2
                 self.add_constraint(Constraint::Equality {
                     left: rd_val,
@@ -111,10 +124,17 @@ impl ConstraintSystem {
                 });
             }
             Opcode::Sub => {
-                let rs1_val = Expression::Variable(format!("reg_{}_before_{}", step.instruction.rs1, step_idx));
-                let rs2_val = Expression::Variable(format!("reg_{}_before_{}", step.instruction.rs2, step_idx));
-                let rd_val = Expression::Variable(format!("reg_{}_after_{}", step.instruction.rd, step_idx));
-                
+                let rs1_val = Expression::Variable(format!(
+                    "reg_{}_before_{}",
+                    step.instruction.rs1, step_idx
+                ));
+                let rs2_val = Expression::Variable(format!(
+                    "reg_{}_before_{}",
+                    step.instruction.rs2, step_idx
+                ));
+                let rd_val =
+                    Expression::Variable(format!("reg_{}_after_{}", step.instruction.rd, step_idx));
+
                 // rd = rs1 - rs2
                 self.add_constraint(Constraint::Equality {
                     left: rd_val,
@@ -122,10 +142,17 @@ impl ConstraintSystem {
                 });
             }
             Opcode::Mul => {
-                let rs1_val = Expression::Variable(format!("reg_{}_before_{}", step.instruction.rs1, step_idx));
-                let rs2_val = Expression::Variable(format!("reg_{}_before_{}", step.instruction.rs2, step_idx));
-                let rd_val = Expression::Variable(format!("reg_{}_after_{}", step.instruction.rd, step_idx));
-                
+                let rs1_val = Expression::Variable(format!(
+                    "reg_{}_before_{}",
+                    step.instruction.rs1, step_idx
+                ));
+                let rs2_val = Expression::Variable(format!(
+                    "reg_{}_before_{}",
+                    step.instruction.rs2, step_idx
+                ));
+                let rd_val =
+                    Expression::Variable(format!("reg_{}_after_{}", step.instruction.rd, step_idx));
+
                 // rd = rs1 * rs2
                 self.add_constraint(Constraint::Equality {
                     left: rd_val,
@@ -147,20 +174,25 @@ impl ConstraintSystem {
 
         // Register 0 is always 0 constraint
         self.add_constraint(Constraint::Equality {
-            left: Expression::Variable(format!("reg_0_after_{}", step_idx)),
+            left: Expression::Variable(format!("reg_0_after_{step_idx}")),
             right: Expression::Constant(0),
         });
 
         // Range checks for register values (32-bit)
         for i in 0..32 {
             self.add_constraint(Constraint::RangeCheck {
-                value: Expression::Variable(format!("reg_{}_after_{}", i, step_idx)),
+                value: Expression::Variable(format!("reg_{i}_after_{step_idx}")),
                 max_bits: 32,
             });
         }
     }
 
-    pub fn evaluate_expression(&self, expr: &Expression, witness: &std::collections::HashMap<String, u32>) -> Option<u32> {
+    #[allow(clippy::only_used_in_recursion)]
+    pub fn evaluate_expression(
+        &self,
+        expr: &Expression,
+        witness: &std::collections::HashMap<String, u32>,
+    ) -> Option<u32> {
         match expr {
             Expression::Constant(val) => Some(*val),
             Expression::Variable(name) => witness.get(name).copied(),
@@ -191,7 +223,11 @@ impl ConstraintSystem {
         true
     }
 
-    pub fn verify_constraint(&self, constraint: &Constraint, witness: &std::collections::HashMap<String, u32>) -> bool {
+    pub fn verify_constraint(
+        &self,
+        constraint: &Constraint,
+        witness: &std::collections::HashMap<String, u32>,
+    ) -> bool {
         match constraint {
             Constraint::Equality { left, right } => {
                 let left_val = self.evaluate_expression(left, witness);
@@ -201,7 +237,7 @@ impl ConstraintSystem {
             Constraint::RangeCheck { value, max_bits } => {
                 if let Some(val) = self.evaluate_expression(value, witness) {
                     if *max_bits >= 32 {
-                        true  // u32 values are always within 32-bit range
+                        true // u32 values are always within 32-bit range
                     } else {
                         val < (1u32 << max_bits)
                     }

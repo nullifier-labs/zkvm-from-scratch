@@ -41,10 +41,12 @@ pub mod crypto;
 pub mod utils;
 
 // Re-export key items from modules
-pub use utils::{encode_hex, decode_hex};
-pub use vm::{VmState, Instruction, Opcode, ExecutionStep};
-pub use crypto::{MerkleTree, HashValue};
-pub use zkp::{Prover, Verifier, Proof, StarkProver, StarkVerifier, ExecutionTrace, ConstraintSystem};
+pub use crypto::{HashValue, MerkleTree};
+pub use utils::{decode_hex, encode_hex};
+pub use vm::{ExecutionStep, Instruction, Opcode, VmState};
+pub use zkp::{
+    ConstraintSystem, ExecutionTrace, Proof, Prover, StarkProver, StarkVerifier, Verifier,
+};
 
 // WebAssembly bindings (optional). Enable via `wasm-bindings` feature if needed.
 #[cfg(all(target_arch = "wasm32", feature = "wasm-bindings"))]

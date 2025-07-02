@@ -1,9 +1,9 @@
-pub mod prover;
-pub mod verifier;
 pub mod constraints;
+pub mod prover;
 pub mod stark;
+pub mod verifier;
 
-pub use prover::*;
-pub use verifier::*;
 pub use constraints::*;
+pub use prover::*;
 pub use stark::*;
+pub use verifier::*;

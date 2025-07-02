@@ -33,7 +33,7 @@ impl Memory {
         if addr % 4 != 0 {
             return Err("Unaligned memory access");
         }
-        
+
         let mut word = 0u32;
         for i in 0..4 {
             let byte = self.read_byte(addr + i)?;
@@ -46,7 +46,7 @@ impl Memory {
         if addr % 4 != 0 {
             return Err("Unaligned memory access");
         }
-        
+
         for i in 0..4 {
             let byte = ((value >> (i * 8)) & 0xff) as u8;
             self.write_byte(addr + i, byte)?;

@@ -2,7 +2,7 @@ use super::{Proof, SerializableStarkProof};
 
 pub trait VerificationSystem {
     type Error: std::fmt::Debug;
-    
+
     fn verify_proof(&self, proof: &Proof, public_inputs: &[u8]) -> Result<bool, Self::Error>;
 }
 
@@ -12,7 +12,9 @@ pub struct Verifier<V: VerificationSystem> {
 
 impl<V: VerificationSystem> Verifier<V> {
     pub fn new(verification_system: V) -> Self {
-        Self { verification_system }
+        Self {
+            verification_system,
+        }
     }
 
     pub fn verify(&self, proof: &Proof, public_inputs: &[u8]) -> Result<bool, V::Error> {
@@ -26,9 +28,7 @@ pub struct StarkVerifier {
 
 impl Default for StarkVerifier {
     fn default() -> Self {
-        Self {
-            security_level: 80,
-        }
+        Self { security_level: 80 }
     }
 }
 
@@ -43,15 +43,18 @@ impl StarkVerifier {
         // 1. Verify all Merkle commitments
         // 2. Check folding consistency
         // 3. Verify query proofs
-        
+
         // For now, just check that we have commitments and a final polynomial
-        !stark_proof.fri_proof.commitments.is_empty() && 
-        !stark_proof.fri_proof.final_polynomial.is_empty()
+        !stark_proof.fri_proof.commitments.is_empty()
+            && !stark_proof.fri_proof.final_polynomial.is_empty()
     }
 
     fn verify_constraint_evaluations(&self, stark_proof: &SerializableStarkProof) -> bool {
         // Check that constraint evaluations are all zero (satisfied)
-        stark_proof.constraint_evaluations.iter().all(|&eval| eval == 0)
+        stark_proof
+            .constraint_evaluations
+            .iter()
+            .all(|&eval| eval == 0)
     }
 
     fn verify_trace_commitment(&self, stark_proof: &SerializableStarkProof) -> bool {
@@ -63,7 +66,7 @@ impl StarkVerifier {
 
 impl VerificationSystem for StarkVerifier {
     type Error = &'static str;
-    
+
     fn verify_proof(&self, proof: &Proof, _public_inputs: &[u8]) -> Result<bool, Self::Error> {
         // Deserialize the STARK proof
         let stark_proof: SerializableStarkProof = bincode::deserialize(&proof.witness)
@@ -93,7 +96,7 @@ pub struct MockVerificationSystem;
 
 impl VerificationSystem for MockVerificationSystem {
     type Error = &'static str;
-    
+
     fn verify_proof(&self, _proof: &Proof, _public_inputs: &[u8]) -> Result<bool, Self::Error> {
         Ok(true)
     }

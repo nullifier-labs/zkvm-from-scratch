@@ -1,4 +1,4 @@
-use crate::vm::{VmState, Instruction};
+use crate::vm::{Instruction, VmState};
 
 #[derive(Debug, Clone)]
 pub struct ExecutionTrace {
@@ -42,7 +42,7 @@ pub struct Proof {
 
 pub trait ProofSystem {
     type Error: std::fmt::Debug;
-    
+
     fn generate_proof(&self, trace: &ExecutionTrace) -> Result<Proof, Self::Error>;
 }
 
@@ -55,15 +55,19 @@ impl<P: ProofSystem> Prover<P> {
         Self { proof_system }
     }
 
-    pub fn generate_execution_trace(&self, vm_state: &mut VmState, max_steps: usize) -> Result<ExecutionTrace, &'static str> {
+    pub fn generate_execution_trace(
+        &self,
+        vm_state: &mut VmState,
+        max_steps: usize,
+    ) -> Result<ExecutionTrace, &'static str> {
         let initial_state = vm_state.clone();
         let execution_steps = vm_state.run_with_trace(max_steps)?;
         let final_state = vm_state.clone();
-        
+
         let mut trace_steps = Vec::new();
         for (index, exec_step) in execution_steps.iter().enumerate() {
             let mut memory_accesses = Vec::new();
-            
+
             // Convert memory reads
             for (addr, value) in &exec_step.memory_reads {
                 memory_accesses.push(MemoryAccess {
@@ -73,7 +77,7 @@ impl<P: ProofSystem> Prover<P> {
                     is_write: false,
                 });
             }
-            
+
             // Convert memory writes
             for (addr, old_value, new_value) in &exec_step.memory_writes {
                 memory_accesses.push(MemoryAccess {
@@ -83,7 +87,7 @@ impl<P: ProofSystem> Prover<P> {
                     is_write: true,
                 });
             }
-            
+
             trace_steps.push(TraceStep {
                 step_index: index,
                 pc_before: exec_step.pc_before,
@@ -95,7 +99,7 @@ impl<P: ProofSystem> Prover<P> {
                 intermediate_values: exec_step.intermediate_values.clone(),
             });
         }
-        
+
         Ok(ExecutionTrace {
             steps: trace_steps,
             initial_state,
@@ -103,7 +107,12 @@ impl<P: ProofSystem> Prover<P> {
         })
     }
 
-    pub fn generate_witness(&self, trace: &ExecutionTrace, public_inputs: Vec<u32>, private_inputs: Vec<u32>) -> WitnessData {
+    pub fn generate_witness(
+        &self,
+        trace: &ExecutionTrace,
+        public_inputs: Vec<u32>,
+        private_inputs: Vec<u32>,
+    ) -> WitnessData {
         WitnessData {
             trace: trace.clone(),
             public_inputs,

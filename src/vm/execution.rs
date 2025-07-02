@@ -1,4 +1,4 @@
-use super::{Instruction, Opcode, Memory};
+use super::{Instruction, Memory, Opcode};
 
 #[derive(Debug, Clone)]
 pub struct VmState {
@@ -54,14 +54,14 @@ impl VmState {
                 self.registers[instruction.rd as usize] = val1 / val2;
             }
             Opcode::Load => {
-                let addr = self.registers[instruction.rs1 as usize]
-                    .wrapping_add(instruction.imm as u32);
+                let addr =
+                    self.registers[instruction.rs1 as usize].wrapping_add(instruction.imm as u32);
                 let value = self.memory.read_word(addr)?;
                 self.registers[instruction.rd as usize] = value;
             }
             Opcode::Store => {
-                let addr = self.registers[instruction.rs1 as usize]
-                    .wrapping_add(instruction.imm as u32);
+                let addr =
+                    self.registers[instruction.rs1 as usize].wrapping_add(instruction.imm as u32);
                 let value = self.registers[instruction.rs2 as usize];
                 self.memory.write_word(addr, value)?;
             }
@@ -85,7 +85,10 @@ impl VmState {
         Ok(())
     }
 
-    pub fn execute_with_trace(&mut self, instruction: Instruction) -> Result<ExecutionStep, &'static str> {
+    pub fn execute_with_trace(
+        &mut self,
+        instruction: Instruction,
+    ) -> Result<ExecutionStep, &'static str> {
         let pc_before = self.pc;
         let registers_before = self.registers;
         let mut memory_reads = Vec::new();
@@ -196,7 +199,7 @@ impl VmState {
 
         self.registers[0] = 0;
         self.pc = self.pc.wrapping_add(4);
-        
+
         Ok(ExecutionStep {
             pc_before,
             pc_after: self.pc,
@@ -220,14 +223,14 @@ impl VmState {
 
     pub fn run_with_trace(&mut self, max_steps: usize) -> Result<Vec<ExecutionStep>, &'static str> {
         let mut trace = Vec::new();
-        
+
         for _ in 0..max_steps {
             let instruction_word = self.memory.read_word(self.pc)?;
             let instruction = super::decode_instruction(instruction_word)?;
             let step = self.execute_with_trace(instruction)?;
             trace.push(step);
         }
-        
+
         Ok(trace)
     }
 }

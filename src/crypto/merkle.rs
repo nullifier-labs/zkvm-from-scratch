@@ -1,4 +1,4 @@
-use super::{HashValue, hash_bytes, hash_pair};
+use super::{hash_bytes, hash_pair, HashValue};
 
 #[derive(Debug, Clone)]
 pub struct MerkleTree {
@@ -18,9 +18,9 @@ impl MerkleTree {
         }
 
         let mut leaves: Vec<HashValue> = data.iter().map(|d| hash_bytes(d)).collect();
-        
+
         if leaves.len() % 2 != 0 {
-            leaves.push(leaves.last().unwrap().clone());
+            leaves.push(*leaves.last().unwrap());
         }
 
         let mut nodes = vec![leaves.clone()];
@@ -28,13 +28,17 @@ impl MerkleTree {
 
         while current_level.len() > 1 {
             let mut next_level = Vec::new();
-            
+
             for chunk in current_level.chunks(2) {
                 let left = &chunk[0];
-                let right = if chunk.len() > 1 { &chunk[1] } else { &chunk[0] };
+                let right = if chunk.len() > 1 {
+                    &chunk[1]
+                } else {
+                    &chunk[0]
+                };
                 next_level.push(hash_pair(left, right));
             }
-            
+
             nodes.push(next_level.clone());
             current_level = next_level;
         }
