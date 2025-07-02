@@ -2,9 +2,9 @@
 name = "zkvm-from-scratch"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Nullifier Labs <nullifier-labs@proton.me>"]
 description = "A zero-knowledge virtual machine implementation from scratch"
-repository = "https://github.com/your-username/zkvm-from-scratch"
+repository = "https://github.com/nullifier-labs/zkvm-from-scratch"
 license = "MIT OR Apache-2.0"
 keywords = ["zkvm", "zero-knowledge", "virtual-machine", "cryptography"]
 categories = ["cryptography", "development-tools"]
