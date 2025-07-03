@@ -3,9 +3,7 @@ use zkvm_from_scratch::{decode_hex, encode_hex, MerkleTree, Prover, StarkProver,
 
 fn benchmark_vm_creation(c: &mut Criterion) {
     c.bench_function("vm_creation", |b| {
-        b.iter(|| {
-            black_box(VmState::new(1024 * 1024))
-        })
+        b.iter(|| black_box(VmState::new(1024 * 1024)))
     });
 }
 
@@ -27,9 +25,7 @@ fn benchmark_merkle_tree_creation(c: &mut Criterion) {
     let leaves: Vec<&[u8]> = data.iter().map(|v| v.as_slice()).collect();
 
     c.bench_function("merkle_tree_1000_leaves", |b| {
-        b.iter(|| {
-            black_box(MerkleTree::new(leaves.clone()))
-        })
+        b.iter(|| black_box(MerkleTree::new(leaves.clone())))
     });
 }
 
@@ -37,16 +33,12 @@ fn benchmark_hex_conversion(c: &mut Criterion) {
     let test_data = vec![0u8; 1024]; // 1KB of data
 
     c.bench_function("bytes_to_hex_1kb", |b| {
-        b.iter(|| {
-            black_box(encode_hex(&test_data))
-        })
+        b.iter(|| black_box(encode_hex(&test_data)))
     });
 
     let hex_string = encode_hex(&test_data);
     c.bench_function("hex_to_bytes_1kb", |b| {
-        b.iter(|| {
-            black_box(decode_hex(&hex_string).unwrap())
-        })
+        b.iter(|| black_box(decode_hex(&hex_string).unwrap()))
     });
 }
 
