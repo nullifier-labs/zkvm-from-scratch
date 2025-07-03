@@ -19,7 +19,7 @@ impl MerkleTree {
 
         let mut leaves: Vec<HashValue> = data.iter().map(|d| hash_bytes(d)).collect();
 
-        if leaves.len() % 2 != 0 {
+        if !leaves.len().is_multiple_of(2) {
             leaves.push(*leaves.last().unwrap());
         }
 
@@ -65,7 +65,7 @@ impl MerkleTree {
         let mut current_index = index;
 
         for level in &self.nodes[..self.nodes.len() - 1] {
-            let sibling_index = if current_index % 2 == 0 {
+            let sibling_index = if current_index.is_multiple_of(2) {
                 current_index + 1
             } else {
                 current_index - 1
@@ -90,7 +90,7 @@ impl MerkleTree {
         let mut current_index = proof.index;
 
         for sibling in &proof.proof {
-            if current_index % 2 == 0 {
+            if current_index.is_multiple_of(2) {
                 current_hash = hash_pair(&current_hash, sibling);
             } else {
                 current_hash = hash_pair(sibling, &current_hash);

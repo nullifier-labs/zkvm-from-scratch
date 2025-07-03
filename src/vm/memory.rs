@@ -30,7 +30,7 @@ impl Memory {
     }
 
     pub fn read_word(&self, addr: u32) -> Result<u32, &'static str> {
-        if addr % 4 != 0 {
+        if !addr.is_multiple_of(4) {
             return Err("Unaligned memory access");
         }
 
@@ -43,7 +43,7 @@ impl Memory {
     }
 
     pub fn write_word(&mut self, addr: u32, value: u32) -> Result<(), &'static str> {
-        if addr % 4 != 0 {
+        if !addr.is_multiple_of(4) {
             return Err("Unaligned memory access");
         }
 
