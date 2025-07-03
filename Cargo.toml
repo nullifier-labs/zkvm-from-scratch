@@ -63,6 +63,10 @@ lto = true
 codegen-units = 1
 panic = "abort"
 
+[profile.bench]
+inherits = "release"
+panic = "unwind"
+
 [[bench]]
 name = "zkvm_benchmarks"
 harness = false
